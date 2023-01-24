@@ -25,6 +25,8 @@ import com.twilio.voice.CallInvite;
 
 import static android.content.Context.AUDIO_SERVICE;
 
+import static com.twiliovoicereactnative.IncomingCallNotificationService.getMainActivityClass;
+
 import java.net.URLDecoder;
 import java.util.Map;
 
@@ -46,14 +48,14 @@ public class NotificationUtility {
     rejectIntent.putExtra(Constants.INCOMING_CALL_INVITE, callInvite);
     rejectIntent.putExtra(Constants.NOTIFICATION_ID, notificationId);
     rejectIntent.putExtra(Constants.UUID, uuid);
-    PendingIntent piRejectIntent = PendingIntent.getService(context.getApplicationContext(), 0, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent piRejectIntent = PendingIntent.getService(context.getApplicationContext(), 0, rejectIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
     Intent acceptIntent = new Intent(context.getApplicationContext(), IncomingCallNotificationService.class);
     acceptIntent.setAction(Constants.ACTION_ACCEPT);
     acceptIntent.putExtra(Constants.INCOMING_CALL_INVITE, callInvite);
     acceptIntent.putExtra(Constants.NOTIFICATION_ID, notificationId);
     acceptIntent.putExtra(Constants.UUID, uuid);
-    PendingIntent piAcceptIntent = PendingIntent.getService(context.getApplicationContext(), 0, acceptIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent piAcceptIntent = PendingIntent.getService(context.getApplicationContext(), 0, acceptIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
     Bitmap icon = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_call_end_white_24dp);
     String title = getDisplayName(callInvite);
@@ -66,7 +68,7 @@ public class NotificationUtility {
     remoteViews.setOnClickPendingIntent(R.id.button_decline, piRejectIntent);
 
     Intent notification_intent = new Intent(context.getApplicationContext(), IncomingCallNotificationService.class);
-    PendingIntent pendingIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notification_intent, 0);
+    PendingIntent pendingIntent = PendingIntent.getActivity(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_IMMUTABLE);
 
     remoteViews.setOnClickPendingIntent(R.id.notification, pendingIntent);
 
@@ -118,12 +120,7 @@ public class NotificationUtility {
     String title = getDisplayName(callInvite);
 
     Log.i(TAG, "createCallAnsweredNotification " + uuid + " notificationId" + notificationId);
-
-    Intent notification_intent = new Intent(context.getApplicationContext(), IncomingCallNotificationService.class);
-    notification_intent.setAction(Constants.ACTION_PUSH_APP_TO_FOREGROUND);
-    notification_intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
-    notification_intent.putExtra(Constants.UUID, uuid);
-    PendingIntent pendingIntent = PendingIntent.getService(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent pendingIntent = getPushAppToForegroundPendingIntent(context, notificationId, uuid);
 
     remoteViews.setOnClickPendingIntent(R.id.tap_to_app, pendingIntent);
 
@@ -133,7 +130,7 @@ public class NotificationUtility {
       endCallIntent.setAction(Constants.ACTION_CALL_DISCONNECT);
       endCallIntent.putExtra(Constants.NOTIFICATION_ID, notificationId);
       endCallIntent.putExtra(Constants.UUID, uuid);
-      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
       remoteViews.setOnClickPendingIntent(R.id.end_call, piEndCallIntent);
 
@@ -183,11 +180,7 @@ public class NotificationUtility {
     RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.custom_call_in_progress);
     remoteViews.setTextViewText(R.id.make_call_text, getContentBanner(context));
 
-    Intent notification_intent = new Intent(context.getApplicationContext(), IncomingCallNotificationService.class);
-    notification_intent.setAction(Constants.ACTION_PUSH_APP_TO_FOREGROUND);
-    notification_intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
-    notification_intent.putExtra(Constants.UUID, uuid);
-    PendingIntent pendingIntent = PendingIntent.getService(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent pendingIntent = getPushAppToForegroundPendingIntent(context, notificationId, uuid);
 
     remoteViews.setOnClickPendingIntent(R.id.tap_to_app, pendingIntent);
 
@@ -196,7 +189,7 @@ public class NotificationUtility {
       endCallIntent.setAction(Constants.ACTION_CALL_DISCONNECT);
       endCallIntent.putExtra(Constants.NOTIFICATION_ID, notificationId);
       endCallIntent.putExtra(Constants.UUID, uuid);
-      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
       remoteViews.setOnClickPendingIntent(R.id.end_call, piEndCallIntent);
 
@@ -244,11 +237,7 @@ public class NotificationUtility {
     RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.custom_call_in_progress);
     remoteViews.setTextViewText(R.id.make_call_text, getContentBanner(context));
 
-    Intent notification_intent = new Intent(context.getApplicationContext(), IncomingCallNotificationService.class);
-    notification_intent.setAction(Constants.ACTION_PUSH_APP_TO_FOREGROUND);
-    notification_intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
-    notification_intent.putExtra(Constants.UUID, uuid);
-    PendingIntent pendingIntent = PendingIntent.getService(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    PendingIntent pendingIntent = getPushAppToForegroundPendingIntent(context, notificationId, uuid);
 
     remoteViews.setOnClickPendingIntent(R.id.tap_to_app, pendingIntent);
 
@@ -257,7 +246,7 @@ public class NotificationUtility {
       endCallIntent.setAction(Constants.ACTION_CALL_DISCONNECT);
       endCallIntent.putExtra(Constants.NOTIFICATION_ID, notificationId);
       endCallIntent.putExtra(Constants.UUID, uuid);
-      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+      PendingIntent piEndCallIntent = PendingIntent.getService(context.getApplicationContext(), 0, endCallIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
       remoteViews.setOnClickPendingIntent(R.id.end_call, piEndCallIntent);
 
@@ -346,4 +335,14 @@ public class NotificationUtility {
     return context.getString(R.string.app_name) + Constants.NOTIFICATION_BANNER;
   }
 
+  private static PendingIntent getPushAppToForegroundPendingIntent(Context context, int notificationId, String uuid) {
+    Intent notification_intent = new Intent(context.getApplicationContext(), Build.VERSION.SDK_INT < Build.VERSION_CODES.S ? IncomingCallNotificationService.class : getMainActivityClass(context));
+    notification_intent.setAction(Constants.ACTION_PUSH_APP_TO_FOREGROUND);
+    notification_intent.putExtra(Constants.NOTIFICATION_ID, notificationId);
+    notification_intent.putExtra(Constants.UUID, uuid);
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+      return PendingIntent.getService(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+    return PendingIntent.getActivity(context.getApplicationContext(), 0, notification_intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+  }
 }

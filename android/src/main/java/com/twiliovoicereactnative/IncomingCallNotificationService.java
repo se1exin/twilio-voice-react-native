@@ -193,7 +193,9 @@ public class IncomingCallNotificationService extends Service {
   private void bringAppToForeground(String callSid, int notificationId, String uuid) {
     NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     notificationManager.cancel(notificationId);
-    sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+      sendBroadcast(new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS));
+    }
     Log.i(TAG, "bringAppToForeground " + uuid + " notificationId" + notificationId);
     startForeground(notificationId, NotificationUtility.createWakeupAppNotification(callSid, notificationId, uuid, NotificationManager.IMPORTANCE_LOW, this));
     Intent intent = new Intent(this, getMainActivityClass(getApplicationContext()));
@@ -210,7 +212,7 @@ public class IncomingCallNotificationService extends Service {
       .isAtLeast(Lifecycle.State.STARTED);
   }
 
-  private static Class getMainActivityClass(Context context) {
+  static Class getMainActivityClass(Context context) {
     String packageName = context.getPackageName();
     Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
     String className = launchIntent.getComponent().getClassName();
